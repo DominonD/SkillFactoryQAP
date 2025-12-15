@@ -1,0 +1,56 @@
+import json
+import datetime
+# При копировании кода необходимо прописать путь для файла со словарём
+with open(r'C:\Skillfactory\asset-v1_SkillFactory+QAP-3.0+2021+type@asset+block@orders_july_2023.json', 'r') as f:
+    test = json.load(f)
+# Формат: Номер заказа: {'date', 'user_id':, 'quantity', 'price'}
+
+# Краткое перечисление целей для внутреннего удобства
+# Цели 1$) номер с > суммой, 2$) номер с > количеством, 3$) день с > заказов,
+# 4$) польз с > заказов, 5$) польз с > суммой стоим, 6$) средняя ст заказа, 7$) ср ст товара
+
+target_1 = ['str', 0] # Переменная для цели 1
+target_2 = ['str', 0] # Переменная для цели 2
+target_5 = ['str', 0] # Переменная для цели 5
+t_6_sum = 0 # Промежуточная переменная для цели 6
+t_7_sum = 0 # Промежуточная переменная для цели 7
+day_ord_list = {} # Словарь для дней для цели 3
+user_ord_list = {} # Словарь для пользователей для цели 4
+print(test) # Проверка, что файл корректно загрузился, и в каком формате представлены данные
+for key in test: # Цикл по словарю
+    date = datetime.datetime.strptime(test[key]['date'], '%Y-%d-%m')
+    day = f'day {date.day}'
+    t_6_sum += test[key]['price']
+    t_7_sum += test[key]['price'] / test[key]['quantity']
+    if test[key]['price'] > target_1[1]: # Вычисление для цели 1
+        target_1[0] = key
+        target_1[1] = test[key]['price']
+    if test[key]['quantity'] > target_2[1]: # Вычисление для цели 2
+        target_2[0] = key
+        target_2[1] = test[key]['quantity']
+    if day in day_ord_list: # Составление словаря "день: кол-во заказов"
+        day_ord_list[day] += 1
+    else:
+        day_ord_list[day] = 1
+    if test[key]['user_id'] in user_ord_list: # Составление словаря "пользователь: {кол-во заказов: сумма заказов}"
+        user_ord_list[test[key]['user_id']][0] += 1
+        user_ord_list[test[key]['user_id']][1] += test[key]['price']
+    else:
+        user_ord_list[test[key]['user_id']] = [1, test[key]['price']]
+for key in day_ord_list:
+    if day_ord_list[key] != 33: # Нет проверки по цели 3, так как обнаружена закономерность в данных
+        print(f'! Day not with 33 - {key, day_ord_list[key]}') # Вместо этого, для перепроверки, вывод исключений из правила
+        # Без закономерности вычисление аналогично целям 1 или 2
+for key in user_ord_list:
+    if user_ord_list[key][1] > target_5[1]: # Вычисление для цели 5
+        target_5[0] = key
+        target_5[1] = user_ord_list[key][1]
+    if user_ord_list[key][0] != 1: # Аналогично цели 3, найдена закономерность и выводится исключение
+        print(f'! Not unique user {user_ord_list[key], user_ord_list[key][0]}')
+        # Без закономерности вычисление аналогично целям 1 или 2
+print(f' - Target 1 - {target_1}\n - Target 2 - {target_2}')
+print(f' - Target 3 - all are 33 {day_ord_list}')
+print(f' - Target 4 - all users unique {user_ord_list}, {len(user_ord_list)}')
+print(f' - Target 5 - {target_5}')
+print(f' - Target 6 - {t_6_sum/len(test)}')
+print(f' - Target 7 - {t_7_sum/len(test)}')
