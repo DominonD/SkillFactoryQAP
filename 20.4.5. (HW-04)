@@ -1,6 +1,6 @@
 import json
 import datetime
-# При копировании кода необходимо прописать путь для файла со словарём
+# При копировании кода необходимо прописать путь для файла со словарём, Update - Про относительный путь помню, просто не стал менять здесь и добавлять в репозиторий файл
 with open(r'C:\Skillfactory\asset-v1_SkillFactory+QAP-3.0+2021+type@asset+block@orders_july_2023.json', 'r') as f:
     test = json.load(f)
 # Формат: Номер заказа: {'date', 'user_id':, 'quantity', 'price'}
@@ -14,6 +14,7 @@ target_2 = ['str', 0] # Переменная для цели 2
 target_5 = ['str', 0] # Переменная для цели 5
 t_6_sum = 0 # Промежуточная переменная для цели 6
 t_7_sum = 0 # Промежуточная переменная для цели 7
+t_7_quant = 0
 day_ord_list = {} # Словарь для дней для цели 3
 user_ord_list = {} # Словарь для пользователей для цели 4
 print(test) # Проверка, что файл корректно загрузился, и в каком формате представлены данные
@@ -22,6 +23,7 @@ for key in test: # Цикл по словарю
     day = f'day {date.day}'
     t_6_sum += test[key]['price']
     t_7_sum += test[key]['price'] / test[key]['quantity']
+    t_7_quant += test[key]['quantity']
     if test[key]['price'] > target_1[1]: # Вычисление для цели 1
         target_1[0] = key
         target_1[1] = test[key]['price']
@@ -53,4 +55,5 @@ print(f' - Target 3 - all are 33 {day_ord_list}')
 print(f' - Target 4 - all users unique {user_ord_list}, {len(user_ord_list)}')
 print(f' - Target 5 - {target_5}')
 print(f' - Target 6 - {t_6_sum/len(test)}')
-print(f' - Target 7 - {t_7_sum/len(test)}')
+#print(f' - Wrong Target 7 - {t_7_sum/len(test)}')
+print(f' - Target 7 - {t_6_sum/t_7_quant}')
